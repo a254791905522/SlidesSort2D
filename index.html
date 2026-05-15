@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Sort 2D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            background:
+                radial-gradient(ellipse 90% 70% at 50% -10%, rgba(72, 168, 200, 0.35) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 50% at 0% 100%, rgba(180, 120, 40, 0.22) 0%, transparent 50%),
+                radial-gradient(ellipse 55% 45% at 100% 80%, rgba(60, 180, 120, 0.18) 0%, transparent 45%),
+                linear-gradient(168deg, #0a1218 0%, #142028 40%, #0c161c 100%);
+            color: #b8d4dc;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .track-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(100, 200, 220, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(100, 200, 220, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 15%, transparent 75%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .gem-glow {
+            position: fixed;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(80, 220, 180, 0.14) 0%, transparent 65%);
+            top: 5%;
+            left: -8%;
+            animation: float 12s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .gem-glow:nth-child(2) {
+            left: auto;
+            right: -6%;
+            top: 60%;
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(255, 180, 80, 0.12) 0%, transparent 62%);
+            animation-delay: -4s;
+            animation-duration: 16s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10px, -12px); }
+        }
+
+        .container {
+            max-width: 680px;
+            width: 100%;
+            background: linear-gradient(155deg, rgba(20, 36, 48, 0.95) 0%, rgba(10, 20, 28, 0.98) 100%);
+            border: 1px solid rgba(80, 180, 200, 0.28);
+            border-radius: 24px;
+            padding: 44px 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            box-shadow:
+                0 0 0 1px rgba(120, 220, 200, 0.06) inset,
+                0 28px 64px rgba(0, 0, 0, 0.55),
+                0 0 72px rgba(60, 160, 180, 0.1);
+        }
+
+        .icon-wrap {
+            width: 112px;
+            height: 112px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 24px;
+            background: linear-gradient(145deg, #1e3a48 0%, #0e1e28 55%, #081218 100%);
+            box-shadow:
+                0 12px 32px rgba(0, 0, 0, 0.5),
+                0 0 24px rgba(80, 200, 180, 0.15),
+                inset 0 1px 0 rgba(180, 240, 255, 0.1);
+            border: 1px solid rgba(80, 180, 200, 0.35);
+        }
+
+        .icon-wrap svg {
+            width: 72px;
+            height: 72px;
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+            color: #e8f8fc;
+        }
+
+        h1 span.accent {
+            background: linear-gradient(90deg, #5ce0c8, #f0c060);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: #6ec8d8;
+            margin-bottom: 26px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 26px;
+        }
+
+        .chip {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(40, 100, 120, 0.35);
+            color: #a8e0ec;
+            border: 1px solid rgba(80, 180, 200, 0.35);
+        }
+
+        .chip.glow {
+            background: rgba(180, 120, 40, 0.25);
+            color: #ffe8b0;
+            border-color: rgba(240, 180, 80, 0.4);
+        }
+
+        .lead {
+            text-align: left;
+            color: #9cc4d0;
+            line-height: 1.75;
+            font-size: 1.04rem;
+            margin-bottom: 26px;
+        }
+
+        .lead strong {
+            color: #fff;
+        }
+
+        .how-to {
+            text-align: left;
+            margin-bottom: 26px;
+            padding: 20px 22px;
+            border-radius: 16px;
+            background: rgba(8, 20, 28, 0.85);
+            border: 1px solid rgba(60, 140, 160, 0.25);
+        }
+
+        .how-to h2 {
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #5ce0c8;
+            margin-bottom: 14px;
+        }
+
+        .how-to ol {
+            margin: 0;
+            padding-left: 20px;
+            color: #8cb8c4;
+            font-size: 0.92rem;
+            line-height: 1.65;
+        }
+
+        .how-to li {
+            margin-bottom: 8px;
+        }
+
+        .how-to li strong {
+            color: #d8f0f4;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            text-align: left;
+            margin-bottom: 26px;
+        }
+
+        .feature-card {
+            background: rgba(6, 16, 24, 0.88);
+            border: 1px solid rgba(60, 130, 150, 0.22);
+            border-radius: 14px;
+            padding: 16px;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(92, 224, 200, 0.35);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .feature-card h3 {
+            font-size: 0.84rem;
+            color: #f0c060;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            font-size: 0.87rem;
+            color: #7aa8b4;
+            line-height: 1.55;
+        }
+
+        .cta {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 16px 36px;
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: #081820;
+            text-decoration: none;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #7ef0d8 0%, #3cb8a0 100%);
+            box-shadow: 0 8px 28px rgba(60, 200, 160, 0.35);
+            border: 2px solid rgba(180, 255, 240, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(80, 220, 180, 0.4);
+        }
+
+        .foot {
+            margin-top: 26px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(60, 120, 140, 0.25);
+            font-size: 0.88rem;
+            color: #5a8090;
+        }
+
+        .foot a {
+            color: #6ec8d8;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .foot a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 560px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 32px 22px;
+            }
+            h1 {
+                font-size: 1.65rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="track-grid" aria-hidden="true"></div>
+    <div class="gem-glow" aria-hidden="true"></div>
+    <div class="gem-glow" aria-hidden="true"></div>
+
+    <div class="container">
+        <div class="icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="6" y="12" width="14" height="40" rx="3" fill="#1a3040" stroke="#4a9cb0" stroke-width="1.2"/>
+                <rect x="25" y="12" width="14" height="40" rx="3" fill="#243848" stroke="#5ce0c8" stroke-width="1.5"/>
+                <rect x="44" y="12" width="14" height="40" rx="3" fill="#1a3040" stroke="#4a9cb0" stroke-width="1.2"/>
+                <rect x="28" y="22" width="8" height="8" rx="2" fill="#f0c060"/>
+                <rect x="28" y="34" width="8" height="8" rx="2" fill="#5ce0c8"/>
+                <rect x="10" y="26" width="6" height="6" rx="1.5" fill="#e87850" opacity="0.9"/>
+                <rect x="48" y="30" width="6" height="6" rx="1.5" fill="#a878e0" opacity="0.85"/>
+                <path d="M25 32 L32 32 L32 28 M32 36 L39 36" stroke="#7ef0d8" stroke-width="1.5" fill="none" opacity="0.7"/>
+            </svg>
+        </div>
+
+        <h1>Slide Sort <span class="accent">2D</span></h1>
+        <p class="tagline">Slide · shift · sort</p>
+
+        <div class="chips">
+            <span class="chip glow">Free</span>
+            <span class="chip">iOS 15+</span>
+            <span class="chip">Puzzle</span>
+            <span class="chip glow">Ages 4+</span>
+        </div>
+
+        <p class="lead">
+            <strong>Slide, shift, and sort your way through fast-paced puzzle levels.</strong> Slide Sort 2D blends classic column-matching logic with a unique Middle Track: scroll infinite side columns, stash items in the center lane, and line up identical sets to clear the board before you run out of moves. Mine gems underground or serve dishes to workers—every stage has its own collection goal.
+        </p>
+
+        <section class="how-to">
+            <h2>How to play</h2>
+            <ol>
+                <li><strong>Slide to align</strong> — Scroll the left and right columns up and down to arrange items.</li>
+                <li><strong>Shift &amp; store</strong> — Use the Middle Track to move pieces between columns or hold them for later.</li>
+                <li><strong>Align sets</strong> — Stack matching items vertically to collect them.</li>
+                <li><strong>Reach the goal</strong> — Hit each level’s target to unlock the next challenge.</li>
+            </ol>
+        </section>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>Middle Track mechanic</h3>
+                <p>Strategy goes beyond classic sorting—the center lane is your bridge to big cascades and clutch saves.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Underground themes</h3>
+                <p>Gem-mining adventures and underground food-service stages keep visuals and goals fresh.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Three challenge modes</h3>
+                <p>Moves Mode, Time Mode, and Hybrid Mode tailor pressure to how you like to play.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Cascading combos</h3>
+                <p>Chain reactions clear the board with satisfying particles and golden coin celebrations.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Boosters &amp; hints</h3>
+                <p>Undo, hints, and skip help you through tough levels when you need a nudge.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Daily rewards</h3>
+                <p>Earn coins from levels and daily challenges to spend on boosters and extra moves.</p>
+            </div>
+        </div>
+
+        <a href="https://apps.apple.com/us/app/slide-sort-2d/id6766782595?uo=4" class="cta" target="_blank" rel="noopener noreferrer">Download on the App Store</a>
+
+        <div class="foot">
+            <a href="privacy.html">Privacy overview</a>
+        </div>
+    </div>
+</body>
+
+</html>
